@@ -1,0 +1,173 @@
+{
+    "info": {
+        "name": "RoomBook — Lot 1 : Authentification & Utilisateurs",
+        "description": "Collection Postman pour tester l'API RoomBook Lot 1.\n\n**Utilisation :**\n1. Importer ce fichier dans Postman\n2. Créer un environnement avec la variable `base_url` = `http://localhost:8000/api`\n3. Lancer d'abord 'POST Login' — le token est sauvegardé automatiquement\n4. Toutes les autres requêtes l'utilisent automatiquement",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        { "key": "base_url", "value": "http://localhost:8000/api" },
+        { "key": "token", "value": "" }
+    ],
+    "item": [
+        {
+            "name": "🔓 Public",
+            "item": [
+                {
+                    "name": "GET Health Check",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/health"
+                    }
+                },
+                {
+                    "name": "POST Login (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if (res.token) { pm.collectionVariables.set('token', res.token); }",
+                                    "pm.test('Connexion réussie', () => pm.response.to.have.status(200));"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/login",
+                        "header": [{ "key": "Content-Type", "value": "application/json" }],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@roombook.fr\",\n  \"password\": \"password\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "POST Login (Responsable)",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/login",
+                        "header": [{ "key": "Content-Type", "value": "application/json" }],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"responsable@roombook.fr\",\n  \"password\": \"password\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "POST Login (Enseignant)",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/login",
+                        "header": [{ "key": "Content-Type", "value": "application/json" }],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"enseignant@roombook.fr\",\n  \"password\": \"password\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "POST Login (Mauvais identifiants)",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/login",
+                        "header": [{ "key": "Content-Type", "value": "application/json" }],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"inconnu@roombook.fr\",\n  \"password\": \"mauvais\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🔒 Auth (token requis)",
+            "item": [
+                {
+                    "name": "GET Mon profil (/me)",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/me",
+                        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+                    }
+                },
+                {
+                    "name": "POST Logout",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/logout",
+                        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "👤 Utilisateurs (Admin uniquement)",
+            "item": [
+                {
+                    "name": "GET Liste des utilisateurs",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/users",
+                        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+                    }
+                },
+                {
+                    "name": "POST Créer un utilisateur",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/users",
+                        "header": [
+                            { "key": "Authorization", "value": "Bearer {{token}}" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Nouveau Enseignant\",\n  \"email\": \"nouveau@roombook.fr\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"role\": \"enseignant\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "GET Afficher un utilisateur",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/users/2",
+                        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+                    }
+                },
+                {
+                    "name": "PUT Modifier un utilisateur",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/users/2",
+                        "header": [
+                            { "key": "Authorization", "value": "Bearer {{token}}" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Dupont Marie (modifiée)\",\n  \"role\": \"responsable\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "DELETE Supprimer un utilisateur",
+                    "request": {
+                        "method": "DELETE",
+                        "url": "{{base_url}}/users/6",
+                        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+                    }
+                },
+                {
+                    "name": "GET Accès refusé (non-admin)",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/users",
+                        "header": [{ "key": "Authorization", "value": "Bearer TOKEN_NON_ADMIN_ICI" }]
+                    }
+                }
+            ]
+        }
+    ]
+}
